@@ -600,6 +600,7 @@ task 'package:debian' => :fakeroot do
 
 	sh "sed -i 's/Version: .*/Version: #{PACKAGE_VERSION}/' debian/control"
 	sh "cp -R debian #{fakeroot}/DEBIAN"
+  sh "chmod 0755 #{fakeroot}/DEBIAN"
 	sh "sed -i 's/: any/: #{arch}/' #{fakeroot}/DEBIAN/control"
 	sh "chown -R root:root #{fakeroot}"
 	sh "dpkg -b #{fakeroot} pkg/passenger_#{PACKAGE_VERSION}-#{arch}.deb"
