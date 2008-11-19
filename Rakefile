@@ -587,11 +587,17 @@ task 'package:debian' => :fakeroot do
 	end
 
 	fakeroot = "pkg/fakeroot"
-	arch = `uname -m`.strip
-	if arch =~ /^i.86$/
-		arch = "i386"
-	end
-	
+
+  raw_arch = `uname -m`.chomp
+  arch = case raw_arch
+  when /^i\.86$/
+    "i386"
+  when /^x86_64/
+    "amd64"
+  else
+    raw_arch
+  end
+
 	sh "sed -i 's/Version: .*/Version: #{PACKAGE_VERSION}/' debian/control"
 	sh "cp -R debian #{fakeroot}/DEBIAN"
 	sh "sed -i 's/: any/: #{arch}/' #{fakeroot}/DEBIAN/control"
