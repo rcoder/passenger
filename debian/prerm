@@ -6,4 +6,5 @@ config directives from your vhosts, too!)
 END
 
 a2dismod passenger
+apache2ctl graceful
 
