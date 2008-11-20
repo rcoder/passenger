@@ -579,13 +579,6 @@ end
 
 desc "Create a Debian package"
 task 'package:debian' => :fakeroot do
-	if Process.euid != 0
-		STDERR.puts
-		STDERR.puts "*** ERROR: the 'package:debian' task must be run as root."
-		STDERR.puts
-		exit 1
-	end
-
 	fakeroot = "pkg/fakeroot"
 
   raw_arch = `uname -m`.chomp
@@ -600,10 +593,10 @@ task 'package:debian' => :fakeroot do
 
 	sh "sed -i 's/Version: .*/Version: #{PACKAGE_VERSION}/' debian/control"
 	sh "cp -R debian #{fakeroot}/DEBIAN"
+  sh "cp -R debian-etc/apache2 #{fakeroot}/etc/"
   sh "chmod 0755 #{fakeroot}/DEBIAN"
 	sh "sed -i 's/: any/: #{arch}/' #{fakeroot}/DEBIAN/control"
-	sh "chown -R root:root #{fakeroot}"
-	sh "dpkg -b #{fakeroot} pkg/passenger_#{PACKAGE_VERSION}-#{arch}.deb"
+	sh "fakeroot dpkg -b #{fakeroot} pkg/passenger_#{PACKAGE_VERSION}-#{arch}.deb"
 end
 
 

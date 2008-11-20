@@ -1,4 +1,5 @@
 #!/bin/sh
+
 if ruby -e ''; then
 	if ! ruby -rpassenger/native_support -e '' 2>/dev/null; then
 		export RUBYLIB=/usr/lib/ruby/1.8
@@ -21,4 +22,9 @@ else
 	echo "********* NOTE ***********"
 	echo "Ruby doesn't seem to be installed. Please install Ruby and RubyGems, because Passenger needs them."
 fi
+
+echo "Activating Passenger module in Apache..."
+a2enmod passenger
+echo "Restart Apache using '/etc/init.d/apache2 force-reload' to complete installation."
+
 exit 0
