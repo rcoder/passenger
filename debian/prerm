@@ -1,2 +1,9 @@
 #!/bin/sh
 
+echo <<END
+Disabling Passenger Apache module. (Be sure to remove Rails/Passenger* 
+config directives from your vhosts, too!)
+END
+
+a2dismod passenger
+
