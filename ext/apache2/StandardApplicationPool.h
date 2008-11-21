@@ -518,10 +518,10 @@ private:
 					activeOrMaxChanged.notify_all();
 				}
 			} else {
-				while (!(active < max)) {
+				if (active >= max) {
 					activeOrMaxChanged.wait(l);
-				}
-				if (count == max) {
+					goto beginning_of_function;
+				} else if (count == max) {
 					container = inactiveApps.front();
 					inactiveApps.pop_front();
 					domain = domains[container->app->getAppRoot()].get();
@@ -765,6 +765,48 @@ public:
 		} else {
 			return toString(boost::defer_lock);
 		}
+	}
+	
+	/**
+	 * Returns an XML description of the internal state of the
+	 * application pool.
+	 */
+	virtual string toXml() const {
+		unique_lock<boost::mutex> l(lock);
+		stringstream result;
+		DomainMap::const_iterator it;
+		
+		result << "<?xml version=\"1.0\" encoding=\"iso8859-1\" ?>\n";
+		result << "<info>";
+		
+		result << "<domains>";
+		for (it = domains.begin(); it != domains.end(); it++) {
+			Domain *domain = it->second.get();
+			AppContainerList *instances = &domain->instances;
+			AppContainerList::const_iterator lit;
+			
+			result << "<domain>";
+			result << "<name>" << escapeForXml(it->first) << "</name>";
+			
+			result << "<instances>";
+			for (lit = instances->begin(); lit != instances->end(); lit++) {
+				AppContainer *container = lit->get();
+				
+				result << "<instance>";
+				result << "<pid>" << container->app->getPid() << "</pid>";
+				result << "<sessions>" << container->sessions << "</sessions>";
+				result << "<processed>" << container->processed << "</processed>";
+				result << "<uptime>" << container->uptime() << "</uptime>";
+				result << "</instance>";
+			}
+			result << "</instances>";
+			
+			result << "</domain>";
+		}
+		result << "</domains>";
+		
+		result << "</info>";
+		return result.str();
 	}
 };
 

@@ -54,13 +54,13 @@ class ApplicationSpawner
 		Process.waitpid(pid) rescue nil
 		
 		channel = MessageChannel.new(a)
-		pid, socket_name, using_abstract_namespace = channel.read
+		pid, socket_name, socket_type = channel.read
 		if pid.nil?
 			raise IOError, "Connection closed"
 		end
 		owner_pipe = channel.recv_io
 		return Application.new(@app_root, pid, socket_name,
-			using_abstract_namespace == "true", owner_pipe)
+			socket_type, owner_pipe)
 	end
 
 private
@@ -72,11 +72,11 @@ private
 			lower_privilege('passenger_wsgi.py', lowest_user)
 		end
 		
-		socket_file = "/tmp/passenger_wsgi.#{Process.pid}.#{rand 10000000}"
+		socket_file = "#{passenger_tmpdir}/passenger_wsgi.#{Process.pid}.#{rand 10000000}"
 		server = UNIXServer.new(socket_file)
 		begin
 			reader, writer = IO.pipe
-			channel.write(Process.pid, socket_file, "false")
+			channel.write(Process.pid, socket_file, "unix")
 			channel.send_io(writer)
 			writer.close
 			channel.close
